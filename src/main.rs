@@ -16,6 +16,7 @@ mod config;
 mod game;
 mod player;
 mod ship;
+mod types;
 
 fn main() -> std::io::Result<()> {
     let args = env::args().collect::<Vec<String>>();
