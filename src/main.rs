@@ -4,17 +4,19 @@
 
 extern crate static_assertions as sa;
 
-use std::env;
-use crate::server::launch_server;
-use std::io::{Error, ErrorKind};
 use crate::client::launch_client;
+use crate::server::launch_server;
+use std::env;
+use std::io::{Error, ErrorKind};
 
-mod agent;
+mod attacker;
 mod client;
-mod server;
 mod config;
-mod game;
+mod defender;
+mod game_engine;
+mod game_interface;
 mod player;
+mod server;
 mod ship;
 mod types;
 
@@ -28,12 +30,12 @@ fn main() -> std::io::Result<()> {
 
     if &args[1] == "server" {
         match launch_server(args[2].to_owned()) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(err) => eprintln!("{}", err),
         }
     } else if &args[1] == "client" {
         match launch_client(args[2].to_owned()) {
-            Ok(()) => {},
+            Ok(()) => {}
             Err(err) => eprintln!("{}", err),
         }
     } else {

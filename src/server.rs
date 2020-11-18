@@ -1,7 +1,7 @@
+use crate::types::ClientType;
+use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
-use std::io::Write;
-use crate::types::ClientType;
 
 fn client_attacker(mut stream: TcpStream) {
     // Client to identify as attacker
@@ -45,13 +45,9 @@ pub fn launch_server(addr: String) -> Result<(), String> {
         match stream {
             Ok(stream) => {
                 if client_type {
-                    thread::spawn(move|| {
-                        client_defender(stream)
-                    });
+                    thread::spawn(move || client_defender(stream));
                 } else {
-                    thread::spawn(move|| {
-                        client_attacker(stream)
-                    });
+                    thread::spawn(move || client_attacker(stream));
                 }
                 client_type = !client_type;
             }

@@ -1,12 +1,13 @@
+use serde::{Deserialize, Serialize};
+
 use crate::config::*;
 
+#[derive(Serialize, Deserialize)]
 pub struct Ship {
     /// Which lanes the ship is in
     pub lane: usize,
-
     /// The ship's speed in the y axis
     pub speed: f64,
-
     /// The ship's distance in the y axis
     pub progress: f64,
 }
