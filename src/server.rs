@@ -2,36 +2,10 @@ use crate::types::ClientType;
 use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
-
-fn client_attacker(mut stream: TcpStream) {
-    // Client to identify as attacker
-    stream.write(&[ClientType::Attacker as u8]).unwrap();
-
-    // while match stream.read(&mut data) {
-    //     Ok(size) => {
-    //         stream.write(&data[0..size]).unwrap();
-    //         true
-    //     },
-    //     Err(_) => {
-    //         false
-    //     }
-    // } {}
-}
-
-fn client_defender(mut stream: TcpStream) {
-    // Client to identify as defender
-    stream.write(&[ClientType::Defender as u8]).unwrap();
-
-    // while match stream.read(&mut data) {
-    //     Ok(size) => {
-    //         stream.write(&data[0..size]).unwrap();
-    //         true
-    //     },
-    //     Err(_) => {
-    //         false
-    //     }
-    // } {}
-}
+use crate::defender::server_defender;
+use crate::attacker::server_attacker;
+use std::sync::Arc;
+use crate::game_engine::GameEngine;
 
 pub fn launch_server(addr: String) -> Result<(), String> {
     let listener = match TcpListener::bind(&addr) {
@@ -40,14 +14,23 @@ pub fn launch_server(addr: String) -> Result<(), String> {
     };
 
     let mut client_type = true;
+    let mut handles = vec![];
+    let mut game_engine = Arc::new(GameEngine::new());
 
     for stream in listener.incoming() {
         match stream {
-            Ok(stream) => {
+            Ok(mut stream) => {
+                let game = Arc::clone(&game_engine);
                 if client_type {
-                    thread::spawn(move || client_defender(stream));
+                    stream.write(&[ClientType::Defender as u8]).unwrap();
+                    let handle = thread::spawn(move || server_defender(stream, game));
+                    handles.push(handle);
                 } else {
-                    thread::spawn(move || client_attacker(stream));
+                    stream.write(&[ClientType::Attacker as u8]).unwrap();
+                    let handle = thread::spawn(move || server_attacker(stream, game));
+                    handles.push(handle);
+                    // Create another game engine every second iteration
+                    game_engine = Arc::new(GameEngine::new());
                 }
                 client_type = !client_type;
             }
@@ -55,6 +38,10 @@ pub fn launch_server(addr: String) -> Result<(), String> {
                 eprintln!("Error: {}", e);
             }
         }
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
     }
 
     Ok(())
