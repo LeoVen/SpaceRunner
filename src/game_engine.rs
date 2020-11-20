@@ -36,7 +36,7 @@ impl GameEngine {
         }
     }
     /// Makes the attacker ships fo forward
-    pub fn run(&mut self, dt: f64) {
+    pub fn turn(&mut self, dt: f64) {
         for ship in self.ships.iter_mut() {
             ship.forward(dt);
         }

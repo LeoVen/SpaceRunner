@@ -4,7 +4,7 @@ use std::net::{TcpListener, TcpStream};
 use std::thread;
 use crate::defender::server_defender;
 use crate::attacker::server_attacker;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use crate::game_engine::GameEngine;
 
 pub fn launch_server(addr: String) -> Result<(), String> {
@@ -15,7 +15,7 @@ pub fn launch_server(addr: String) -> Result<(), String> {
 
     let mut client_type = true;
     let mut handles = vec![];
-    let mut game_engine = Arc::new(GameEngine::new());
+    let mut game_engine = Arc::new(Mutex::new(GameEngine::new()));
 
     for stream in listener.incoming() {
         match stream {
@@ -30,7 +30,7 @@ pub fn launch_server(addr: String) -> Result<(), String> {
                     let handle = thread::spawn(move || server_attacker(stream, game));
                     handles.push(handle);
                     // Create another game engine every second iteration
-                    game_engine = Arc::new(GameEngine::new());
+                    game_engine = Arc::new(Mutex::new(GameEngine::new()));
                 }
                 client_type = !client_type;
             }
